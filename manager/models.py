@@ -20,34 +20,20 @@ class Alignment(models.Model):
 class Campaign(models.Model):
     campaign_id = models.IntegerField(primary_key=True)
     pc_id_pc = models.ForeignKey('Pc', models.DO_NOTHING, db_column='pc_id_pc', blank=True, null=True)
-    dm_id_dm = models.ForeignKey('Dm', models.DO_NOTHING, db_column='dm_id_dm', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     dates = models.TextField(blank=True, null=True)  # This field type is a guess.
     rating = models.SmallIntegerField(blank=True, null=True)
     url = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'campaign'
 
 
-class Dm(models.Model):
-    dm_id = models.IntegerField(primary_key=True)
-    first_name = models.TextField(blank=True, null=True)
-    last_name = models.TextField(blank=True, null=True)
-    email = models.TextField(blank=True, null=True)
-    birthdate = models.DateField(blank=True, null=True)
-    discord_id = models.TextField(blank=True, null=True)
-    zoom_id = models.TextField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'dm'
-
-
 class Pc(models.Model):
     pc_id = models.IntegerField(primary_key=True)
-    player_id_player = models.ForeignKey('Player', models.DO_NOTHING, db_column='player_id_player', blank=True, null=True)
+    person_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='person_id_person', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     class_level = models.SmallIntegerField(blank=True, null=True)
     id_pc_class = models.ForeignKey('PcClass', models.DO_NOTHING, db_column='id_pc_class')
@@ -81,8 +67,8 @@ class PcClass(models.Model):
         db_table = 'pc_class'
 
 
-class Player(models.Model):
-    player_id = models.IntegerField(primary_key=True)
+class Person(models.Model):
+    person_id = models.IntegerField(primary_key=True)
     first_name = models.TextField(blank=True, null=True)
     last_name = models.TextField(blank=True, null=True)
     email = models.TextField(blank=True, null=True)
@@ -92,7 +78,19 @@ class Player(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'player'
+        db_table = 'person'
+
+
+class PersonCampaign(models.Model):
+    person_id_person = models.OneToOneField(Person, models.DO_NOTHING, db_column='person_id_person', primary_key=True)
+    campaign_id_campaign = models.ForeignKey(Campaign, models.DO_NOTHING, db_column='campaign_id_campaign')
+    is_dm = models.BooleanField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'person_campaign'
+        unique_together = (('person_id_person', 'campaign_id_campaign'),)
 
 
 class Race(models.Model):
@@ -102,4 +100,6 @@ class Race(models.Model):
     class Meta:
         managed = False
         db_table = 'race'
+
+
 

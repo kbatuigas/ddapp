@@ -6,10 +6,11 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
+from django.contrib.postgres.fields import ranges
 
 
 class Alignment(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -18,10 +19,10 @@ class Alignment(models.Model):
 
 
 class Campaign(models.Model):
-    campaign_id = models.IntegerField(primary_key=True)
+    campaign_id = models.AutoField(primary_key=True)
     pc_id_pc = models.ForeignKey('Pc', models.DO_NOTHING, db_column='pc_id_pc', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
-    dates = models.TextField(blank=True, null=True)  # This field type is a guess.
+    dates = ranges.DateRangeField(blank=True, null=True)  # This field type is a guess.
     rating = models.SmallIntegerField(blank=True, null=True)
     url = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
@@ -29,10 +30,14 @@ class Campaign(models.Model):
     class Meta:
         managed = False
         db_table = 'campaign'
+        ordering = ['name']
 
+    def __str__(self):
+        """String for representing the Campaign object."""
+        return f'{self.name}'
 
 class Pc(models.Model):
-    pc_id = models.IntegerField(primary_key=True)
+    pc_id = models.AutoField(primary_key=True)
     person_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='person_id_person', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     class_level = models.SmallIntegerField(blank=True, null=True)
@@ -59,7 +64,7 @@ class Pc(models.Model):
 
 
 class PcClass(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -68,7 +73,7 @@ class PcClass(models.Model):
 
 
 class Person(models.Model):
-    person_id = models.IntegerField(primary_key=True)
+    person_id = models.AutoField(primary_key=True)
     first_name = models.TextField(blank=True, null=True)
     last_name = models.TextField(blank=True, null=True)
     email = models.TextField(blank=True, null=True)
@@ -94,7 +99,7 @@ class PersonCampaign(models.Model):
 
 
 class Race(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:

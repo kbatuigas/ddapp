@@ -6,14 +6,13 @@
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
-from django.contrib.postgres.fields import ranges
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
 class Alignment(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.SmallIntegerField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -22,10 +21,10 @@ class Alignment(models.Model):
 
 
 class Campaign(models.Model):
-    campaign_id = models.AutoField(primary_key=True)
+    campaign_id = models.IntegerField(primary_key=True)
     pc_id_pc = models.ForeignKey('Pc', models.DO_NOTHING, db_column='pc_id_pc', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
-    dates = ranges.DateRangeField(blank=True, null=True)  # This field type is a guess.
+    dates = models.TextField(blank=True, null=True)  # This field type is a guess.
     rating = models.SmallIntegerField(blank=True, null=True)
     url = models.TextField(blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
@@ -33,15 +32,11 @@ class Campaign(models.Model):
     class Meta:
         managed = False
         db_table = 'campaign'
-        ordering = ['name']
 
-    def __str__(self):
-        """String for representing the Campaign object."""
-        return f'{self.name}'
 
 class Pc(models.Model):
-    pc_id = models.AutoField(primary_key=True)
-    person_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='person_id_person', blank=True, null=True)
+    pc_id = models.IntegerField(primary_key=True)
+    user_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='user_id_person', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     class_level = models.SmallIntegerField(blank=True, null=True)
     id_pc_class = models.ForeignKey('PcClass', models.DO_NOTHING, db_column='id_pc_class')
@@ -67,7 +62,7 @@ class Pc(models.Model):
 
 
 class PcClass(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.SmallIntegerField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -76,41 +71,45 @@ class PcClass(models.Model):
 
 
 class Person(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, primary_key=False)
-    person_id = models.IntegerField(primary_key=True)
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        primary_key=True,
+    )
     discord_id = models.TextField(blank=True, null=True)
+    zoom_id = models.TextField(blank=True, null=True)
     birthdate = models.DateField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'person'
 
+
 @receiver(post_save, sender=User)
 def update_profile_signal(sender, instance, created, **kwargs):
-# sender = model class, instance = the instance being saved, created = True if new record was created
     if created:
         Person.objects.create(user=instance)
     instance.person.save()
 
+
 class PersonCampaign(models.Model):
-    person_id_person = models.OneToOneField(Person, models.DO_NOTHING, db_column='person_id_person', primary_key=True)
-    campaign_id_campaign = models.ForeignKey(Campaign, models.DO_NOTHING, db_column='campaign_id_campaign')
     is_dm = models.BooleanField(blank=True, null=True)
+    campaign_id_campaign = models.OneToOneField(Campaign, models.DO_NOTHING, db_column='campaign_id_campaign', primary_key=True)
     notes = models.TextField(blank=True, null=True)
+    user_id_person = models.ForeignKey(Person, models.DO_NOTHING, db_column='user_id_person')
 
     class Meta:
         managed = False
         db_table = 'person_campaign'
-        unique_together = (('person_id_person', 'campaign_id_campaign'),)
+        unique_together = (('campaign_id_campaign', 'user_id_person'),)
 
 
 class Race(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.SmallIntegerField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'race'
-
 
 

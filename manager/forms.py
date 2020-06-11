@@ -5,8 +5,8 @@ from django.core import validators
 
 
 class RegisterForm(UserCreationForm):
+	birthdate = forms.DateField()
 
-
-    class Meta:
-	    model = User
-	    fields = ["username", "password1", "password2"]
+	class Meta:
+		model = User
+		fields = ["username", "password1", "password2", "birthdate", "email"]

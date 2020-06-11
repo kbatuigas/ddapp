@@ -8,6 +8,8 @@
 from django.db import models
 from django.contrib.postgres.fields import ranges
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Alignment(models.Model):
@@ -74,17 +76,21 @@ class PcClass(models.Model):
 
 
 class Person(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    person_id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, primary_key=False)
+    person_id = models.IntegerField(primary_key=True)
     discord_id = models.TextField(blank=True, null=True)
-    zoom_id = models.TextField(blank=True, null=True)
     birthdate = models.DateField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'person'
 
-
+@receiver(post_save, sender=User)
+def update_profile_signal(sender, instance, created, **kwargs):
+# sender = model class, instance = the instance being saved, created = True if new record was created
+    if created:
+        Person.objects.create(user=instance)
+    instance.person.save()
 
 class PersonCampaign(models.Model):
     person_id_person = models.OneToOneField(Person, models.DO_NOTHING, db_column='person_id_person', primary_key=True)

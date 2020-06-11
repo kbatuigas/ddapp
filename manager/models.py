@@ -7,6 +7,7 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.contrib.postgres.fields import ranges
+from django.contrib.auth.models import User
 
 
 class Alignment(models.Model):
@@ -73,10 +74,8 @@ class PcClass(models.Model):
 
 
 class Person(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     person_id = models.AutoField(primary_key=True)
-    first_name = models.TextField(blank=True, null=True)
-    last_name = models.TextField(blank=True, null=True)
-    email = models.TextField(blank=True, null=True)
     discord_id = models.TextField(blank=True, null=True)
     zoom_id = models.TextField(blank=True, null=True)
     birthdate = models.DateField(blank=True, null=True)
@@ -84,6 +83,7 @@ class Person(models.Model):
     class Meta:
         managed = False
         db_table = 'person'
+
 
 
 class PersonCampaign(models.Model):

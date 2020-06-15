@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from .models import Person, Campaign, PersonCampaign, Pc, PcClass, Alignment, Race
 
+
 @admin.register(Campaign)
 class CampaignAdmin(admin.ModelAdmin):
     list_display = ('name', 'dates', 'rating', 'url')

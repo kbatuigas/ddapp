@@ -21,6 +21,9 @@ class Alignment(models.Model):
         managed = False
         db_table = 'alignment'
 
+    def __str__(self):
+        return self.name
+
 
 class Campaign(models.Model):
     campaign_id = models.AutoField(primary_key=True)
@@ -34,6 +37,9 @@ class Campaign(models.Model):
     class Meta:
         managed = False
         db_table = 'campaign'
+
+    def __str__(self):
+        return self.name
 
 
 class Pc(models.Model):
@@ -62,6 +68,9 @@ class Pc(models.Model):
         managed = False
         db_table = 'pc'
 
+    def __str__(self):
+        return f'{self.name} ({self.id_pc_class.name}, Lvl: {self.class_level})'
+
 
 class PcClass(models.Model):
     id = models.SmallAutoField(primary_key=True)
@@ -70,6 +79,9 @@ class PcClass(models.Model):
     class Meta:
         managed = False
         db_table = 'pc_class'
+
+    def __str__(self):
+        return self.name
 
 # We want our persons (players) to be able to log in as users, update their
 # profiles etc. For our authentication needs we are going with the Profile/One-to-One
@@ -92,6 +104,7 @@ class Person(models.Model):
         managed = False
         db_table = 'person'
 
+
 # We use signals to hook update_profile_signal method to the User model
 # (specifically after save() occurs. This will create a new Person from
 # a new user registration (RegisterForm submitted).
@@ -105,6 +118,7 @@ def update_profile_signal(sender, instance, created, **kwargs):
     instance.person.save()
 
 # Many-to-many table
+# TODO: Check if we're supposed to use ManyToManyField instead
 class PersonCampaign(models.Model):
     # Since Django doesn't handle composite PKs, we add a new PK field
     # We had to drop the existing PK constraint in the db first as well so this new field could be added
@@ -128,5 +142,8 @@ class Race(models.Model):
     class Meta:
         managed = False
         db_table = 'race'
+
+    def __str__(self):
+        return self.name
 
 

@@ -21,6 +21,6 @@ from manager import views as mviews
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('manager/', include('manager.urls')),
-    # Redirect base URL to our manager app. Empty string '' implies '/'
+    # Redirect base URL to our manager app view. Empty string '' implies '/'
     path('', RedirectView.as_view(url='manager/', permanent=True)),
 ]

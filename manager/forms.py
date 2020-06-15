@@ -5,6 +5,7 @@ from django.core import validators
 
 
 class RegisterForm(UserCreationForm):
+	# Specify the extra Person fields we want to be able to save to upon registration
 	birthdate = forms.DateField()
 	discord_id = forms.CharField(max_length=100, help_text='Discord ID')
 	zoom_id = forms.CharField(max_length=100, help_text='Zoom ID')

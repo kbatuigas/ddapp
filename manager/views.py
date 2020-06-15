@@ -44,7 +44,7 @@ def register(response):
             user = authenticate(username=username, password=password)
             login(response, user)
 
-            return redirect('/')
+            return redirect('/')    # Make sure this is inside the if block
     else:
         form = RegisterForm()
 

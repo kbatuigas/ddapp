@@ -4,6 +4,7 @@
 #   * Make sure each model has one field with primary_key=True
 #   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
 #   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
+#   *   This includes altering keys etc
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 from django.contrib.postgres.fields import DateRangeField
@@ -13,7 +14,7 @@ from django.dispatch import receiver
 
 
 class Alignment(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.SmallAutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -22,7 +23,7 @@ class Alignment(models.Model):
 
 
 class Campaign(models.Model):
-    campaign_id = models.IntegerField(primary_key=True)
+    campaign_id = models.AutoField(primary_key=True)
     pc_id_pc = models.ForeignKey('Pc', models.DO_NOTHING, db_column='pc_id_pc', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     dates = DateRangeField(blank=True, null=True)
@@ -36,7 +37,7 @@ class Campaign(models.Model):
 
 
 class Pc(models.Model):
-    pc_id = models.IntegerField(primary_key=True)
+    pc_id = models.AutoField(primary_key=True)
     user_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='user_id_person', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     class_level = models.SmallIntegerField(blank=True, null=True)
@@ -63,7 +64,7 @@ class Pc(models.Model):
 
 
 class PcClass(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.SmallAutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -103,21 +104,25 @@ def update_profile_signal(sender, instance, created, **kwargs):
         Person.objects.create(user=instance)
     instance.person.save()
 
-
+# Many-to-many table
 class PersonCampaign(models.Model):
+    # Since Django doesn't handle composite PKs, we add a new PK field
+    # We had to drop the existing PK constraint in the db first as well so this new field could be added
+    person_campaign_id = models.AutoField(primary_key=True)
     is_dm = models.BooleanField(blank=True, null=True)
-    campaign_id_campaign = models.OneToOneField(Campaign, models.DO_NOTHING, db_column='campaign_id_campaign', primary_key=True)
+    # The auto generated model had this set as a OnetoOne so we changed it to FK
+    campaign_id_campaign = models.ForeignKey(Campaign, models.DO_NOTHING, db_column='campaign_id_campaign')
     notes = models.TextField(blank=True, null=True)
     user_id_person = models.ForeignKey(Person, models.DO_NOTHING, db_column='user_id_person')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'person_campaign'
         unique_together = (('campaign_id_campaign', 'user_id_person'),)
 
 
 class Race(models.Model):
-    id = models.SmallIntegerField(primary_key=True)
+    id = models.SmallAutoField(primary_key=True)
     name = models.TextField(blank=True, null=True)
 
     class Meta:

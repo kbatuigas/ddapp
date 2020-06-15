@@ -20,7 +20,7 @@ GRANT ALL PRIVILEGES ON ALL sequences IN SCHEMA public TO devuser;
 
 Set up a virtual environment and add to project:
 
-Django 2.2.12
+Django 2.2.12  
 [django-crispy-forms](https://django-crispy-forms.readthedocs.io/en/latest/install.html)
 
 Start a new project:
@@ -80,4 +80,15 @@ you can pipe it to models.py:
 
 ## Other notes
 
-Our registration template (/manager/templates/manager/register.html) is namespaced just in case
+* Our registration template (/manager/templates/manager/register.html) is namespaced just in case.
+
+* Django docs says `managed = False` in model class `meta` only pertains to creation and deletion of table, but it also
+applies to alter. If you don't change it, no migrations happen.
+
+* Django doesn't handle Postgres composite primary keys. 
+
+* Django doesn't do a good job of altering table keys if it didn't create them. If Postgres already
+has the correct keys just take them out of the migration file.
+
+* Creating a new auto-generated column on a table asks for a default value during the migration. Just
+delete the `default` argument in the migration file.

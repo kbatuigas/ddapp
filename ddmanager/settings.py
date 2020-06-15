@@ -31,7 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'manager',  # Don't use manager.apps.ManagerConfig, but I forget why
+    'manager',  # Use this instead of manager.apps.ManagerConfig so that makemigrations detects changes
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

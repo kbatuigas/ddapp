@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Character Name: {{ pc.name }}</h1>
+    <div>
+        <p><strong>Class & Level:</strong> {{ pc.id_pc_class.name }} {{ pc.class_level }}</p>
+        <p><strong>Player name:</strong> {{ pc.user_id_person }}</p>
+        <p><strong>Race:</strong> {{ pc.id_race.name }}</p>
+        <p><strong>Alignment:</strong> {{ pc.id_alignment.name }}</p>
+        <p><strong>Experience Points:</strong> {{ pc.xp }}</p>
+
+    </div>
+    <div>
+        <p><strong>Strength:</strong> {{ pc.strength }}</p>
+        <p><strong>Dexterity:</strong> {{ pc.dexterity }}</p>
+        <p><strong>Constitution:</strong> {{ pc.constitution }}</p>
+        <p><strong>Intelligence:</strong> {{ pc.intelligence }}</p>
+        <p><strong>Wisdom:</strong> {{ pc.wisdom }}</p>
+        <p><strong>Charisma:</strong> {{ pc.charisma }}</p>
+    </div>
+    <div>
+        <p><strong>Current Hit Points:</strong> {{ pc.hp }}</p>
+    </div>
+    <div>
+        <p><strong>Attacks & Spellcasting:</strong> {{ pc.spells }}</p>
+        <p><strong>Equipment:</strong> {{ pc.equipment }}</p>
+        <p><strong>Treasure:</strong> {{ pc.treasure }}</p>
+    </div>
+
+{% endblock %}

@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from django.views import generic
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
 # from django.contrib.auth.forms import UserCreationForm
-from manager.models import Person, Campaign
+from manager.models import Person, Campaign, Pc
 from .forms import RegisterForm
 
 # Take advantage of generic views (e.g. ListView) since they abstract
@@ -21,6 +24,47 @@ class IndexView(generic.ListView):
 
     # def get_queryset(self):
     #     return Campaign.objects.all()
+
+
+class PcDetailView(generic.DetailView):
+    model = Pc
+    # Django looks for manager/pc_detail.html by default so we need to specify the template name
+    template_name = 'manager/character-detail.html'
+
+
+class PcListView(generic.ListView):
+    model = Pc
+    template_name = 'manager/characters.html'
+    context_object_name = 'my_characters'
+    # TODO: I think I need to define queryset so that it returns only characters where person is the
+    #   logged in user
+
+
+class PcCreate(CreateView):
+    model = Pc
+    template_name = 'manager/character-new.html'
+    # It's better practice to explicitly set all fields that should be edited
+    fields = ["name", "class_level", "id_pc_class", "id_alignment", "id_race", "strength",
+              "dexterity", "constitution", "intelligence", "wisdom", "charisma", "armor_class",
+              "initiative", "hp", "xp", "equipment", "spells", "treasure"]
+    success_url = reverse_lazy('characters')
+
+    def form_valid(self, form):
+        form.instance.user_id_person = self.request.user.person
+        return super().form_valid(form)
+
+# def create_new_character(request):
+#     if request.method == 'POST':
+#         form = CreateNewCharacterForm(request.POST)
+#
+#         if form.is_valid():
+#             character = form.save()
+#
+#     else:
+#         form = CreateNewCharacterForm()
+#
+#     return render(request, 'manager/character-new.html', {'form': form})
+
 
 # Form data is validated and db is refreshed after the signal so that the corresponding
 # person instance created by the signal is loaded. Then the custom person fields are saved

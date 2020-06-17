@@ -1,0 +1,16 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>My Characters</h1>
+    {% if my_characters %}
+        {% for character in my_characters %}
+            <li>
+                <a href="{{ character.get_absolute_url }}">{{ character.name }}</a>
+            </li>
+        {% endfor %}
+
+    {% else %}<p>You have no characters.</p>
+    {% endif %}
+    <a href="{% url 'character-create' %}">Add a new character</a>
+
+{% endblock %}

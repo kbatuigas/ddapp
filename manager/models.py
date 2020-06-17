@@ -11,6 +11,7 @@ from django.contrib.postgres.fields import DateRangeField
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 
 
 class Alignment(models.Model):
@@ -71,6 +72,9 @@ class Pc(models.Model):
     def __str__(self):
         return f'{self.name} ({self.id_pc_class.name}, Lvl: {self.class_level})'
 
+    def get_absolute_url(self):
+        return reverse('character-detail', args=[str(self.pc_id)])
+
 
 class PcClass(models.Model):
     id = models.SmallAutoField(primary_key=True)
@@ -103,6 +107,9 @@ class Person(models.Model):
     class Meta:
         managed = False
         db_table = 'person'
+
+    def __str__(self):
+        return f'{self.user.first_name} {self.user.last_name}'
 
 
 # We use signals to hook update_profile_signal method to the User model

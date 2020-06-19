@@ -5,7 +5,8 @@
     {% if my_characters %}
         {% for character in my_characters %}
             <li>
-                <a href="{{ character.get_absolute_url }}">{{ character.name }}</a>
+                <a href="{{ character.get_absolute_url }}">{{ character.name }} (Lvl: {{ character.class_level }})</a>
+                <span><a href="{{ character.get_edit_url }}">Edit</a></span>
             </li>
         {% endfor %}
 

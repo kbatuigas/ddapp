@@ -75,6 +75,9 @@ class Pc(models.Model):
     def get_absolute_url(self):
         return reverse('character-detail', args=[str(self.pc_id)])
 
+    def get_edit_url(self):
+        return reverse('character-edit', args=[str(self.pc_id)])
+
 
 class PcClass(models.Model):
     id = models.SmallAutoField(primary_key=True)

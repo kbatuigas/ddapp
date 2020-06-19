@@ -1,18 +1,21 @@
+# from django.http import Http
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin   # We use this with class-based views
 # from django.contrib.auth.forms import UserCreationForm
 from manager.models import Person, Campaign, Pc
 from .forms import RegisterForm
+
 
 # Take advantage of generic views (e.g. ListView) since they abstract
 # common web dev patterns and allow us to write much less code.
 # ListView is one of the generic views designed for displaying data
 # which is one of the things we want on our home page
-class IndexView(generic.ListView):
+class IndexView(LoginRequiredMixin, generic.ListView):
     # Picked Campaign since it looks like this makes it easier to step out to
     # the others (e.g. person campaign, character), based on our data model
     model = Campaign
@@ -22,14 +25,12 @@ class IndexView(generic.ListView):
     # need it to use our index.html instead
     template_name = 'index.html'
 
-    # def get_queryset(self):
-    #     return Campaign.objects.all()
-
 
 class PcDetailView(generic.DetailView):
     model = Pc
     # Django looks for manager/pc_detail.html by default so we need to specify the template name
     template_name = 'manager/character-detail.html'
+
 
 
 class PcListView(generic.ListView):
@@ -39,8 +40,12 @@ class PcListView(generic.ListView):
     # TODO: I think I need to define queryset so that it returns only characters where person is the
     #   logged in user
 
+    # https://docs.djangoproject.com/en/3.0/topics/class-based-views/generic-display/#dynamic-filtering
+    # def get_queryset(self):
+    #     return Pc.objects.filter(user_id_person=request.user)
 
-class PcCreate(CreateView):
+
+class PcCreate(LoginRequiredMixin, CreateView):
     model = Pc
     template_name = 'manager/character-new.html'
     # It's better practice to explicitly set all fields that should be edited
@@ -53,23 +58,20 @@ class PcCreate(CreateView):
         form.instance.user_id_person = self.request.user.person
         return super().form_valid(form)
 
-# def create_new_character(request):
-#     if request.method == 'POST':
-#         form = CreateNewCharacterForm(request.POST)
-#
-#         if form.is_valid():
-#             character = form.save()
-#
-#     else:
-#         form = CreateNewCharacterForm()
-#
-#     return render(request, 'manager/character-new.html', {'form': form})
+
+class PcUpdate(UpdateView):
+    model = Pc
+    template_name = 'manager/character-edit.html'
+    fields = ["name", "class_level", "id_pc_class", "id_alignment", "id_race", "strength",
+              "dexterity", "constitution", "intelligence", "wisdom", "charisma", "armor_class",
+              "initiative", "hp", "xp", "equipment", "spells", "treasure"]
 
 
 # Form data is validated and db is refreshed after the signal so that the corresponding
 # person instance created by the signal is loaded. Then the custom person fields are saved
 # to the user model, after which the person/user is logged in and redirected to the home page
 # https://dev.to/coderasha/create-advanced-user-sign-up-view-in-django-step-by-step-k9m
+@login_required
 def register(response):
     if response.method == 'POST':
         form = RegisterForm(response.POST)

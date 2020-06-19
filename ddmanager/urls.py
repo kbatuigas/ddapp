@@ -14,13 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from django.views.generic import RedirectView
 from manager import views as mviews
 
+# Set the application namespace so Django can differentiate URL names
+# between multiple applications (although we don't currently have this).
+#
+app_name = 'manager'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('manager/', include('manager.urls')),
     # Redirect base URL to our manager app view. Empty string '' implies '/'
     path('', RedirectView.as_view(url='manager/', permanent=True)),
+    # Instead of Django's out of the box authentication views, we reference specific views
+    # to have more control over URLs/templates. Don't forget to include the name parameter if you do this!
+    path('account/login/', auth_views.LoginView.as_view(template_name='manager/login.html'), name='login'),
+    path('account/logout/', auth_views.LogoutView.as_view(template_name='manager/logout.html'), name='logout'),
+    path('account/', include('django.contrib.auth.urls')),    # Django's out of the box auth views
 ]

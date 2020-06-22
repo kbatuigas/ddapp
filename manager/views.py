@@ -32,7 +32,6 @@ class PcDetailView(generic.DetailView):
     template_name = 'manager/character-detail.html'
 
 
-
 class PcListView(generic.ListView):
     model = Pc
     template_name = 'manager/characters.html'
@@ -41,8 +40,8 @@ class PcListView(generic.ListView):
     #   logged in user
 
     # https://docs.djangoproject.com/en/3.0/topics/class-based-views/generic-display/#dynamic-filtering
-    # def get_queryset(self):
-    #     return Pc.objects.filter(user_id_person=request.user)
+    def get_queryset(self):
+        return Pc.objects.filter(user_id_person=self.request.user.id)
 
 
 class PcCreate(LoginRequiredMixin, CreateView):

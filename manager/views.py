@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin   # We use this with class-based views
 # from django.contrib.auth.forms import UserCreationForm
-from manager.models import Person, Campaign, Pc
+from manager.models import Person, Campaign, Pc, PersonCampaign
 from .forms import RegisterForm
 
 
@@ -25,6 +25,9 @@ class IndexView(LoginRequiredMixin, generic.ListView):
     # need it to use our index.html instead
     template_name = 'index.html'
 
+    def get_queryset(self):
+        return Campaign.objects.exclude(personcampaign__user_id_person=self.request.user.id)
+
 
 class PcDetailView(generic.DetailView):
     model = Pc
@@ -36,8 +39,6 @@ class PcListView(generic.ListView):
     model = Pc
     template_name = 'manager/characters.html'
     context_object_name = 'my_characters'
-    # TODO: I think I need to define queryset so that it returns only characters where person is the
-    #   logged in user
 
     # https://docs.djangoproject.com/en/3.0/topics/class-based-views/generic-display/#dynamic-filtering
     def get_queryset(self):
@@ -64,6 +65,49 @@ class PcUpdate(UpdateView):
     fields = ["name", "class_level", "id_pc_class", "id_alignment", "id_race", "strength",
               "dexterity", "constitution", "intelligence", "wisdom", "charisma", "armor_class",
               "initiative", "hp", "xp", "equipment", "spells", "treasure"]
+
+
+# class CampaignListView(generic.ListView):
+#     model = Campaign
+#     template_name = 'manager/characters.html'
+#     context_object_name = 'my_characters'
+#
+#     # https://docs.djangoproject.com/en/3.0/topics/class-based-views/generic-display/#dynamic-filtering
+#     def get_queryset(self):
+#         return Pc.objects.filter(user_id_person=self.request.user.id)
+
+
+# class CampaignSignUp(CreateView):
+#     model = PersonCampaign
+#     template_name = 'manager/campaign-signup.html'
+#     fields = ["is_dm", "campaign_id_campaign", "notes", "user_id_person",
+#               "person_campaign_id"]
+
+
+# It appears that using generic editing views will still work for this use case
+# (e.g. update multiple models) as long as you override the default form_valid method
+class CampaignCreate(LoginRequiredMixin, CreateView):
+    model = Campaign
+    template_name = 'manager/campaign-create.html'
+    fields = ["name", "dates", "url", "notes"]
+    success_url = '/'
+
+    def form_valid(self, form):
+        # 1. Get campaign ID
+            # Figure out how to get handle to campaign that was just created
+        # 2. Create new PersonCampaign
+        # 3. Set campaign ID and user ID and is_dm = True for the new PersonCampaign
+        # 4. Save new PersonCampaign
+        campaign = form.save()
+        # campaign.save()
+        person_campaign = PersonCampaign()
+        person_campaign.campaign_id_campaign = campaign
+        # If you create the campaign, you are the DM and you "own" the campaign
+        person_campaign.user_id_person = self.request.user.person
+        person_campaign.is_dm = True
+        person_campaign.save()
+
+        return super().form_valid(form)
 
 
 # Form data is validated and db is refreshed after the signal so that the corresponding

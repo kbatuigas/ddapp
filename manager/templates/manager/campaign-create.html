@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Create A Campaign{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h1>Add New Campaign</h1>
+    <form action="" method="post">
+    {% csrf_token %}
+    <table>
+    {{ form|crispy }}
+    </table>
+    <input type="submit" value="Add">
+  </form>
+{% endblock %}

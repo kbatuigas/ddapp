@@ -28,7 +28,6 @@ class Alignment(models.Model):
 
 class Campaign(models.Model):
     campaign_id = models.AutoField(primary_key=True)
-    pc_id_pc = models.ForeignKey('Pc', models.DO_NOTHING, db_column='pc_id_pc', blank=True, null=True)
     name = models.TextField(blank=True, null=True)
     dates = DateRangeField(blank=True, null=True)
     rating = models.SmallIntegerField(blank=True, null=True)
@@ -36,7 +35,7 @@ class Campaign(models.Model):
     notes = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'campaign'
 
     def __str__(self):
@@ -46,10 +45,12 @@ class Campaign(models.Model):
 class Pc(models.Model):
     pc_id = models.AutoField(primary_key=True)
     user_id_person = models.ForeignKey('Person', models.DO_NOTHING, db_column='user_id_person', blank=True, null=True)
+    campaign_id_campaign = models.ForeignKey('Campaign', models.DO_NOTHING, db_column='campaign_id_campaign', blank=True,
+                                             null=True)
     name = models.TextField(blank=True, null=True)
     class_level = models.SmallIntegerField(blank=True, null=True)
     id_pc_class = models.ForeignKey('PcClass', models.DO_NOTHING, db_column='id_pc_class')
-    id_alignment = models.ForeignKey(Alignment, models.DO_NOTHING, db_column='id_alignment')
+    id_alignment = models.ForeignKey(Alignment, models.DO_NOTHING, db_column='id_alignment', to_field='id')
     id_race = models.ForeignKey('Race', models.DO_NOTHING, db_column='id_race')
     strength = models.SmallIntegerField(blank=True, null=True)
     dexterity = models.SmallIntegerField(blank=True, null=True)
@@ -66,7 +67,7 @@ class Pc(models.Model):
     treasure = models.TextField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pc'
 
     def __str__(self):
@@ -127,8 +128,7 @@ def update_profile_signal(sender, instance, created, **kwargs):
         Person.objects.create(user=instance)
     instance.person.save()
 
-# Many-to-many table
-# TODO: Check if we're supposed to use ManyToManyField instead
+# Many-to-many intermediate table
 class PersonCampaign(models.Model):
     # Since Django doesn't handle composite PKs, we add a new PK field
     # We had to drop the existing PK constraint in the db first as well so this new field could be added
@@ -140,7 +140,7 @@ class PersonCampaign(models.Model):
     user_id_person = models.ForeignKey(Person, models.DO_NOTHING, db_column='user_id_person')
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'person_campaign'
         unique_together = (('campaign_id_campaign', 'user_id_person'),)
 

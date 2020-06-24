@@ -3,7 +3,14 @@ from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.core import validators
-from manager.models import Pc
+from manager.models import Campaign, Pc, PersonCampaign
+
+
+# class CampaignSignUpForm(ModelForm):
+# 	class Meta:
+# 		model = PersonCampaign
+# 		fields = ["user_id_person", "is_dm", "campaign_id_campaign", "notes",
+# 				  "person_campaign_id"]
 
 
 class RegisterForm(UserCreationForm):

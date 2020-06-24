@@ -19,14 +19,19 @@ class IndexView(LoginRequiredMixin, generic.ListView):
     # Picked Campaign since it looks like this makes it easier to step out to
     # the others (e.g. person campaign, character), based on our data model
     model = Campaign
-    context_object_name = 'campaign_list'   # I think this might be ok to get rid of
-
     # Default for ListView would have been 'manager/campaign_list.html' but we
     # need it to use our index.html instead
     template_name = 'index.html'
 
-    def get_queryset(self):
-        return Campaign.objects.exclude(personcampaign__user_id_person=self.request.user.id)
+    def get_context_data(self, **kwargs):
+        # I guess I don't need to pass IndexView, self in super()? https://docs.djangoproject.com/en/2.1/topics/class-based-views/generic-display/#adding-extra-context
+        context = super().get_context_data(**kwargs)
+        # Show campaigns which logged in user is currently in (either as DM or regular player)
+        context['my_campaigns'] = Campaign.objects.filter(personcampaign__user_id_person=self.request.user.id)
+        # Show available campaigns that logged in user can sign up for
+        context['available_campaigns'] = Campaign.objects.exclude(personcampaign__user_id_person=self.request.user.id)
+
+        return context
 
 
 class PcDetailView(generic.DetailView):

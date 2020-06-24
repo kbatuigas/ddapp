@@ -9,7 +9,7 @@ urlpatterns = [
 
     path('characters/create/', views.PcCreate.as_view(), name='character-create'),
     # path('campaigns/', views.PcListView.as_view(), name='characters'),
-    path('campaigns/signup/', views.CampaignSignUp.as_view(), name='campaign-signup'),
+    # path('campaigns/signup/', views.CampaignSignUp.as_view(), name='campaign-signup'),
     path('campaigns/create/', views.CampaignCreate.as_view(), name='campaign-create'),
     path('register/', views.register, name='register'),     # register is a regular view function
 

@@ -2,15 +2,27 @@
 
 {% block content %}
     <h1>Welcome</h1>
-    {% if campaign_list %}
-        <h2>Available campaigns</h2>
-        {% for campaign in campaign_list %}
-            <li>
-                <a href="{{ campaign.url }}">{{ campaign.name }}</a>
-            </li>
-        {% endfor %}
-
-    {% else %}<p>There are no campaigns.</p>
-    {% endif %} 
+    {% if available_campaigns %}
+        <section>
+            <h2>Available campaigns</h2>
+            {% for campaign in available_campaigns %}
+                <li>
+                    <a href="{{ campaign.url }}">{{ campaign.name }}</a>
+                </li>
+            {% endfor %}
+            {% else %}<p>There are no available campaigns to sign up for.</p>
+        </section>
+    {% endif %}
+    {% if my_campaigns %}
+        <section>
+            <h2>My campaigns</h2>
+            {% for mc in my_campaigns %}
+                <li>
+                    <a href="{{ mc.url }}">{{ mc.name }}</a>
+                </li>
+            {% endfor %}
+            {% else %}<p>You are not in any campaigns.</p>
+        </section>
+    {% endif %}
 
 {% endblock %}

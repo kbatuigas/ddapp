@@ -6,11 +6,25 @@ from django.core import validators
 from manager.models import Campaign, Pc, PersonCampaign
 
 
-# class CampaignSignUpForm(ModelForm):
-# 	class Meta:
-# 		model = PersonCampaign
-# 		fields = ["user_id_person", "is_dm", "campaign_id_campaign", "notes",
-# 				  "person_campaign_id"]
+class CampaignSignUpForm(forms.Form):
+	# Only include campaigns that have not been signed up for yet, i.e.
+	# where campaign.campaign_id is not in the set of person_campaign.campaign_id_campaign values
+	# that belong to user_id_person = request.user. Define queryset in __init__ below
+	campaign = forms.ModelChoiceField(queryset=None, label='Select the campaign you want to join')
+	# Since a character can only be in one campaign at a time,
+	# Only include characters that have not been signed up to a campaign yet, i.e.
+	# where pc.user_id_person = request.user and pc.campaign_id_campaign is null?
+	# Define queryset in __init__ below
+	characters = forms.ModelMultipleChoiceField(queryset=Pc.objects.all(), label='Select the characters you want to play '
+																	'for this campaign')
+
+	# The form doesn't have access to the request so we can't just say request.user in the queryset definition above
+	# Override the init method to pass in the request.user and reference it in the form field
+	def __init__(self, *args, **kwargs):
+		self.person = kwargs.pop('person')
+		super(CampaignSignUpForm, self).__init__(*args, **kwargs)
+		self.fields['campaign'].queryset = Campaign.objects.exclude(pk__in=PersonCampaign.objects.values_list('campaign_id_campaign', flat=True).filter(user_id_person=self.person))
+
 
 
 class RegisterForm(UserCreationForm):

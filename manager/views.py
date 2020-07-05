@@ -8,7 +8,7 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin   # We use this with class-based views
 # from django.contrib.auth.forms import UserCreationForm
 from manager.models import Person, Campaign, Pc, PersonCampaign
-from .forms import RegisterForm
+from .forms import RegisterForm, CampaignSignUpForm
 
 
 # Take advantage of generic views (e.g. ListView) since they abstract
@@ -82,7 +82,20 @@ class PcUpdate(UpdateView):
 #         return Pc.objects.filter(user_id_person=self.request.user.id)
 
 
-# class CampaignSignUp(CreateView):
+@login_required
+def campaign_signup(request):
+    if request.method == 'POST':
+        form = CampaignSignUpForm(request.POST)
+        if form.is_valid():
+            person_campaign = form.save()
+            return redirect('/campaigns/')
+    else:
+        form = CampaignSignUpForm(person=request.user.person)
+
+    return render(request, 'manager/campaign-signup.html', {'form': form})
+
+
+# class CampaignSignUp(LoginRequiredMixin, CreateView):
 #     model = PersonCampaign
 #     template_name = 'manager/campaign-signup.html'
 #     fields = ["is_dm", "campaign_id_campaign", "notes", "user_id_person",

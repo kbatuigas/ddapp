@@ -15,7 +15,7 @@ class CampaignSignUpForm(forms.Form):
 	# Only include characters that have not been signed up to a campaign yet, i.e.
 	# where pc.user_id_person = request.user and pc.campaign_id_campaign is null?
 	# Define queryset in __init__ below
-	characters = forms.ModelMultipleChoiceField(queryset=Pc.objects.all(), label='Select the characters you want to play '
+	characters = forms.ModelMultipleChoiceField(queryset=None, label='Select the characters you want to play '
 																	'for this campaign')
 
 	# The form doesn't have access to the request so we can't just say request.user in the queryset definition above
@@ -24,6 +24,7 @@ class CampaignSignUpForm(forms.Form):
 		self.person = kwargs.pop('person')
 		super(CampaignSignUpForm, self).__init__(*args, **kwargs)
 		self.fields['campaign'].queryset = Campaign.objects.exclude(pk__in=PersonCampaign.objects.values_list('campaign_id_campaign', flat=True).filter(user_id_person=self.person))
+		self.fields['characters'].queryset = Pc.objects.filter(user_id_person=self.person, campaign_id_campaign__isnull=True)
 
 
 

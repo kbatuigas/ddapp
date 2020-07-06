@@ -1,6 +1,6 @@
 # from django.http import Http
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
@@ -85,10 +85,29 @@ class PcUpdate(UpdateView):
 @login_required
 def campaign_signup(request):
     if request.method == 'POST':
-        form = CampaignSignUpForm(request.POST)
+        # person also needs to be passed in here
+        form = CampaignSignUpForm(request.POST, person=request.user.person)
         if form.is_valid():
-            person_campaign = form.save()
-            return redirect('/campaigns/')
+            # 1. New PersonCampaign
+            # 2. Get Campaign ID from form data
+            # 3. Set campaign_id_campaign = campaign_id and user_id_person = request.user.person
+            # 4. Save PersonCampaign
+            # 5. Get Pc objects from form data
+            # 6. For each Pc
+            #   - Set campaign_id_campaign = campaign_id
+            #   - Save Pc
+            person_campaign_instance = PersonCampaign()
+            selected_campaign = form.cleaned_data.get('campaign')   # value of campaign key
+            person_campaign_instance.campaign_id_campaign = selected_campaign
+            person_campaign_instance.user_id_person = request.user.person
+            person_campaign_instance.save()
+            selected_characters = form.cleaned_data.get('characters')
+            for c in selected_characters:
+                c_instance = get_object_or_404(Pc, pk=c.pc_id)
+                c_instance.campaign_id_campaign = selected_campaign
+                c_instance.save()
+
+            return redirect('index')    # This function also takes in the name of a view
     else:
         form = CampaignSignUpForm(person=request.user.person)
 

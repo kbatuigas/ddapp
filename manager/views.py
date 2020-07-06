@@ -26,21 +26,26 @@ class IndexView(LoginRequiredMixin, generic.ListView):
     def get_context_data(self, **kwargs):
         # I guess I don't need to pass IndexView, self in super()? https://docs.djangoproject.com/en/2.1/topics/class-based-views/generic-display/#adding-extra-context
         context = super().get_context_data(**kwargs)
-        # Show campaigns which logged in user is currently in (either as DM or regular player)
+        # TODO: figure out if there is a more efficient way to do the below
+        # Show campaigns logged in user is currently playing (either as a DM or regular player)
         context['my_campaigns'] = Campaign.objects.filter(personcampaign__user_id_person=self.request.user.id)
+        # Show campaigns logged in user is currently in as a regular player
+        context['my_rp_campaigns'] = Campaign.objects.filter(personcampaign__user_id_person=self.request.user.id, personcampaign__is_dm=False)
+        # Show campaigns for which logged in user is DMing
+        context['my_dm_campaigns'] = Campaign.objects.filter(personcampaign__user_id_person=self.request.user.id, personcampaign__is_dm=True)
         # Show available campaigns that logged in user can sign up for
         context['available_campaigns'] = Campaign.objects.exclude(personcampaign__user_id_person=self.request.user.id)
 
         return context
 
 
-class PcDetailView(generic.DetailView):
+class PcDetailView(LoginRequiredMixin, generic.DetailView):
     model = Pc
     # Django looks for manager/pc_detail.html by default so we need to specify the template name
     template_name = 'manager/character-detail.html'
 
 
-class PcListView(generic.ListView):
+class PcListView(LoginRequiredMixin, generic.ListView):
     model = Pc
     template_name = 'manager/characters.html'
     context_object_name = 'my_characters'
@@ -64,7 +69,7 @@ class PcCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class PcUpdate(UpdateView):
+class PcUpdate(LoginRequiredMixin, UpdateView):
     model = Pc
     template_name = 'manager/character-edit.html'
     fields = ["name", "class_level", "id_pc_class", "id_alignment", "id_race", "strength",
@@ -90,7 +95,7 @@ def campaign_signup(request):
         if form.is_valid():
             # 1. New PersonCampaign
             # 2. Get Campaign ID from form data
-            # 3. Set campaign_id_campaign = campaign_id and user_id_person = request.user.person
+            # 3. Set campaign_id_campaign = campaign_id, user_id_person = request.user.person, is_dm = False
             # 4. Save PersonCampaign
             # 5. Get Pc objects from form data
             # 6. For each Pc
@@ -100,6 +105,7 @@ def campaign_signup(request):
             selected_campaign = form.cleaned_data.get('campaign')   # value of campaign key
             person_campaign_instance.campaign_id_campaign = selected_campaign
             person_campaign_instance.user_id_person = request.user.person
+            person_campaign_instance.is_dm = False
             person_campaign_instance.save()
             selected_characters = form.cleaned_data.get('characters')
             for c in selected_characters:
@@ -151,7 +157,6 @@ class CampaignCreate(LoginRequiredMixin, CreateView):
 # person instance created by the signal is loaded. Then the custom person fields are saved
 # to the user model, after which the person/user is logged in and redirected to the home page
 # https://dev.to/coderasha/create-advanced-user-sign-up-view-in-django-step-by-step-k9m
-@login_required
 def register(response):
     if response.method == 'POST':
         form = RegisterForm(response.POST)

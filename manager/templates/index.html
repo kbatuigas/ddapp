@@ -15,13 +15,23 @@
     {% endif %}
     {% if my_campaigns %}
         <section>
-            <h2>My campaigns</h2>
-            {% for mc in my_campaigns %}
-                <li>
-                    <a href="{{ mc.url }}">{{ mc.name }}</a>
-                </li>
-            {% endfor %}
-            {% else %}<p>You are not in any campaigns.</p>
+            {% if my_dm_campaigns %}
+                <h2>You are the Dungeon Master for the following campaigns:</h2>
+                {% for mdc in my_dm_campaigns %}
+                    <li>
+                        <a href="{{ mdc.url }}">{{ mdc.name }}</a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+            {% if my_rp_campaigns %}
+                <h2>You are playing in the following campaigns:</h2>
+                {% for mrc in my_rp_campaigns %}
+                    <li>
+                        <a href="{{ mrc.url }}">{{ mrc.name }}</a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        {% else %}<p>You are not in any campaigns.</p>
         </section>
     {% endif %}
 

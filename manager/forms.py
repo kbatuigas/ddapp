@@ -1,7 +1,7 @@
 from django import forms
-from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.forms import ModelForm
 from django.core import validators
 from manager.models import Campaign, Pc, PersonCampaign
 
@@ -27,7 +27,6 @@ class CampaignSignUpForm(forms.Form):
 		self.fields['characters'].queryset = Pc.objects.filter(user_id_person=self.person, campaign_id_campaign__isnull=True)
 
 
-
 class RegisterForm(UserCreationForm):
 	# Specify the extra Person fields we want to be able to save to upon registration
 	birthdate = forms.DateField()
@@ -40,18 +39,4 @@ class RegisterForm(UserCreationForm):
 				  "zoom_id"]
 
 
-# Create a Form class from a Pc model
-# class CreateNewCharacterForm(ModelForm):
-# 	class Meta:
-# 		model = Pc
-# 		# It's better practice to explicitly set all fields that should be edited
-# 		fields = ["name", "class_level", "id_pc_class", "id_alignment", "id_race", "strength",
-# 				  "dexterity", "constitution", "intelligence", "wisdom", "charisma", "armor_class",
-# 				  "initiative", "hp", "xp", "equipment", "spells", "treasure"]
 
-
-	# name = forms.CharField()
-	# level = forms.IntegerField()
-	# pc_class = forms.
-	# alignment =
-	# race =

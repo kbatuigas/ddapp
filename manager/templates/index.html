@@ -19,9 +19,11 @@
                 <h2>You are the Dungeon Master for the following campaigns:</h2>
                 {% for mdc in my_dm_campaigns %}
                     <li>
-                        <a href="{{ mdc.url }}">{{ mdc.name }}</a>
+                        <a href="{{ mdc.url }}">{{ mdc.name }}</a><br>
+
                     </li>
                 {% endfor %}
+
             {% endif %}
             {% if my_rp_campaigns %}
                 <h2>You are playing in the following campaigns:</h2>

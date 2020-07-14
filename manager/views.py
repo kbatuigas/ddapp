@@ -1,27 +1,30 @@
 # from django.http import Http
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin   # We use this with class-based views
+from django.forms.formsets import formset_factory
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse_lazy
 from django.views import generic
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.urls import reverse_lazy
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.mixins import LoginRequiredMixin   # We use this with class-based views
 # from django.contrib.auth.forms import UserCreationForm
 from manager.models import Person, Campaign, Pc, PersonCampaign
 from .forms import RegisterForm, CampaignSignUpForm
-
 
 # Take advantage of generic views (e.g. ListView) since they abstract
 # common web dev patterns and allow us to write much less code.
 # ListView is one of the generic views designed for displaying data
 # which is one of the things we want on our home page
 class IndexView(LoginRequiredMixin, generic.ListView):
+# class IndexWithFormView(LoginRequiredMixin, UpdateView):
     # Picked Campaign since it looks like this makes it easier to step out to
     # the others (e.g. person campaign, character), based on our data model
     model = Campaign
     # Default for ListView would have been 'manager/campaign_list.html' but we
     # need it to use our index.html instead
     template_name = 'index.html'
+    success_url = '/'
 
     def get_context_data(self, **kwargs):
         # I guess I don't need to pass IndexView, self in super()? https://docs.djangoproject.com/en/2.1/topics/class-based-views/generic-display/#adding-extra-context
@@ -38,6 +41,10 @@ class IndexView(LoginRequiredMixin, generic.ListView):
 
         return context
 
+    # form processing
+    # def form_valid(self, form):
+        # NotesFormSet = formset_factory(UpdateNotesForm)
+        # if
 
 class PcDetailView(LoginRequiredMixin, generic.DetailView):
     model = Pc
@@ -77,16 +84,6 @@ class PcUpdate(LoginRequiredMixin, UpdateView):
               "initiative", "hp", "xp", "equipment", "spells", "treasure"]
 
 
-# class CampaignListView(generic.ListView):
-#     model = Campaign
-#     template_name = 'manager/characters.html'
-#     context_object_name = 'my_characters'
-#
-#     # https://docs.djangoproject.com/en/3.0/topics/class-based-views/generic-display/#dynamic-filtering
-#     def get_queryset(self):
-#         return Pc.objects.filter(user_id_person=self.request.user.id)
-
-
 @login_required
 def campaign_signup(request):
     if request.method == 'POST':
@@ -120,13 +117,6 @@ def campaign_signup(request):
     return render(request, 'manager/campaign-signup.html', {'form': form})
 
 
-# class CampaignSignUp(LoginRequiredMixin, CreateView):
-#     model = PersonCampaign
-#     template_name = 'manager/campaign-signup.html'
-#     fields = ["is_dm", "campaign_id_campaign", "notes", "user_id_person",
-#               "person_campaign_id"]
-
-
 # It appears that using generic editing views will still work for this use case
 # (e.g. update multiple models) as long as you override the default form_valid method
 class CampaignCreate(LoginRequiredMixin, CreateView):
@@ -153,33 +143,50 @@ class CampaignCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+# The DM can update notes for one campaign at a time.
+class CampaignDetailDMView(LoginRequiredMixin, UpdateView):
+    model = Campaign
+    fields = ["notes"]
+    template_name = "manager/campaign-dm-view.html"
+    success_url = '/'
+
+    def get_context_data(self, **kwargs):
+        # pass in class so that it still retains original Campaign context
+        context = super(CampaignDetailDMView, self).get_context_data(**kwargs)
+        # from PersonCampaign we'll be able to step through person and user
+        context['person_campaigns'] = PersonCampaign.objects.filter(campaign_id_campaign=self.object.campaign_id)
+        context['characters'] = Pc.objects.filter(campaign_id_campaign=self.object.campaign_id)
+
+        return context
+
+
 # Form data is validated and db is refreshed after the signal so that the corresponding
 # person instance created by the signal is loaded. Then the custom person fields are saved
 # to the user model, after which the person/user is logged in and redirected to the home page
 # https://dev.to/coderasha/create-advanced-user-sign-up-view-in-django-step-by-step-k9m
 def register(response):
     if response.method == 'POST':
-        form = RegisterForm(response.POST)
-        if form.is_valid():
-            user = form.save()
+        reg_form = RegisterForm(response.POST)
+        if reg_form.is_valid():
+            user = reg_form.save()
             # There is a synchronism issue here where the corresponding Person is created but
             # the User model here doesn't have access to the Person fields we want to save to.
             # So we use refresh_from_db() to reload the database and load the Person instance
             user.refresh_from_db()
-            user.person.birthdate = form.cleaned_data.get('birthdate')
-            user.person.discord_id = form.cleaned_data.get('discord_id')
-            user.person.zoom_id = form.cleaned_data.get('zoom_id')
+            user.person.birthdate = reg_form.cleaned_data.get('birthdate')
+            user.person.discord_id = reg_form.cleaned_data.get('discord_id')
+            user.person.zoom_id = reg_form.cleaned_data.get('zoom_id')
             user.save()
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
+            username = reg_form.cleaned_data.get('username')
+            password = reg_form.cleaned_data.get('password1')
             user = authenticate(username=username, password=password)
             login(response, user)
 
             return redirect('/')    # Make sure this is inside the if block
     else:
-        form = RegisterForm()
+        reg_form = RegisterForm()
 
-    return render(response, 'manager/register.html', {'form': form})
+    return render(response, 'manager/register.html', {'reg_form': reg_form})
 
 
 

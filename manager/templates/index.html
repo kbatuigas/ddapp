@@ -19,7 +19,7 @@
                 <h2>You are the Dungeon Master for the following campaigns:</h2>
                 {% for mdc in my_dm_campaigns %}
                     <li>
-                        <a href="{{ mdc.url }}">{{ mdc.name }}</a><br>
+                        <a href="campaigns/{{ mdc.pk }}">{{ mdc.name }}</a><br>
 
                     </li>
                 {% endfor %}

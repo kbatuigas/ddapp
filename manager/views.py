@@ -41,10 +41,6 @@ class IndexView(LoginRequiredMixin, generic.ListView):
 
         return context
 
-    # form processing
-    # def form_valid(self, form):
-        # NotesFormSet = formset_factory(UpdateNotesForm)
-        # if
 
 class PcDetailView(LoginRequiredMixin, generic.DetailView):
     model = Pc
@@ -143,6 +139,7 @@ class CampaignCreate(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+# TODO: Restrict view to DM for campaign only
 # The DM can update notes for one campaign at a time.
 class CampaignDetailDMView(LoginRequiredMixin, UpdateView):
     model = Campaign
@@ -158,6 +155,8 @@ class CampaignDetailDMView(LoginRequiredMixin, UpdateView):
         context['characters'] = Pc.objects.filter(campaign_id_campaign=self.object.campaign_id)
 
         return context
+
+    # TODO: How to handle if requested campaign object (campaigns/<pk>) does not exist
 
 
 # Form data is validated and db is refreshed after the signal so that the corresponding
